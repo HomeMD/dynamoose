@@ -527,9 +527,9 @@ Item.prepareForObjectFromSchema = async function<T extends InternalPropertiesCla
 					throw new CustomError.InvalidType(`Not allowed to use an array of types for the timestamps attribute "${prop.name}".`);
 				}
 				switch (typeDetails.typeSettings.storage) {
-				case "iso": return date.toISOString();
-				case "seconds": return Math.floor(date.getTime() / 1000);
-				default: return date.getTime();
+					case "iso": return date.toISOString();
+					case "seconds": return Math.floor(date.getTime() / 1000);
+					default: return date.getTime();
 				}
 			};
 
@@ -573,7 +573,7 @@ Item.attributesWithSchema = async function (item: Item, model: Model<Item>): Pro
 		}
 
 		Object.keys(treeNode).forEach((attr) => {
-			if (attr === "0") {
+			if (attr === "0" && typeof node !== "string") {
 				// We check for empty objects here (added `typeof node === "object" && Object.keys(node).length == 0`, see PR https://github.com/dynamoose/dynamoose/pull/1034) to handle the use case of 2d arrays, or arrays within arrays. `node` in that case will be an empty object.
 				if (!node || node.length == 0 || typeof node === "object" && Object.keys(node).length == 0) {
 					node = [{}]; // fake the path for arrays
@@ -612,6 +612,7 @@ export interface ItemObjectFromSchemaSettings {
 	populate?: boolean;
 	combine?: boolean;
 	modifiers?: ("set" | "get")[];
+	modifiersRaw?: ("getRaw")[];
 	updateTimestamps?: boolean | {updatedAt?: boolean; createdAt?: boolean};
 	typeCheck?: boolean;
 	mapAttributes?: boolean;
@@ -882,6 +883,27 @@ Item.prototype.toDynamo = async function (this: Item, settings: Partial<ItemObje
 // This function will modify the item to conform to the Schema
 Item.prototype.conformToSchema = async function (this: Item, settings: ItemObjectFromSchemaSettings = {"type": "fromDynamo"}): Promise<Item> {
 	let item = this;
+
+	if (settings.modifiersRaw) {
+		const model = item.getInternalProperties(internalProperties).model;
+		const schema = model.getInternalProperties(internalProperties).schemaForObject(item);
+		await Promise.all(settings.modifiersRaw.map(async (modifier) => {
+			const typeIndexOptionMap = schema.getTypePaths(item, settings);
+			await Promise.all(Object.keys(item).map(async (key) => {
+				const modifierFunction = await schema.getAttributeSettingValue(modifier, key, {
+					"returnFunction": true,
+					typeIndexOptionMap
+				});
+				if (modifierFunction) {
+					const value = await modifierFunction(item[key]);
+					if (value) {
+						item[key] = value;
+					}
+				}
+			}));
+		}));
+	}
+
 	if (settings.type === "fromDynamo") {
 		item = await this.prepareForResponse();
 	}

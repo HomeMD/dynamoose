@@ -1,5 +1,5 @@
 {
-  "name": "dynamoose",
+  "name": "careand-dynamoose",
   "version": "4.0.1",
   "description": "Dynamoose is a modeling tool for Amazon's DynamoDB (inspired by Mongoose)",
   "homepage": "https://dynamoosejs.com",
@@ -10,7 +10,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dynamoose/dynamoose.git"
+    "url": "git+https://github.com/HomeMD/dynamoose.git"
   },
   "author": {
     "name": "Charlie Fish",
