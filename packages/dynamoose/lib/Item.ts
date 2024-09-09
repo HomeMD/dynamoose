@@ -896,7 +896,7 @@ Item.prototype.conformToSchema = async function (this: Item, settings: ItemObjec
 				});
 				if (modifierFunction) {
 					const value = await modifierFunction(item[key]);
-					if (value) {
+					if (value !== undefined) {
 						item[key] = value;
 					}
 				}
