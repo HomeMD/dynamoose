@@ -884,29 +884,14 @@ Item.prototype.toDynamo = async function (this: Item, settings: Partial<ItemObje
 Item.prototype.conformToSchema = async function (this: Item, settings: ItemObjectFromSchemaSettings = {"type": "fromDynamo"}): Promise<Item> {
 	let item = this;
 
-	if (settings.modifiersRaw) {
-		const model = item.getInternalProperties(internalProperties).model;
-		const schema = model.getInternalProperties(internalProperties).schemaForObject(item);
-		await Promise.all(settings.modifiersRaw.map(async (modifier) => {
-			const typeIndexOptionMap = schema.getTypePaths(item, settings);
-			await Promise.all(Object.keys(item).map(async (key) => {
-				const modifierFunction = await schema.getAttributeSettingValue(modifier, key, {
-					"returnFunction": true,
-					typeIndexOptionMap
-				});
-				if (modifierFunction) {
-					const value = await modifierFunction(item[key]);
-					if (value !== undefined) {
-						item[key] = value;
-					}
-				}
-			}));
-		}));
+	if (settings.returnRaw) {
+		return item;
 	}
 
 	if (settings.type === "fromDynamo") {
 		item = await this.prepareForResponse();
 	}
+
 	const model = item.getInternalProperties(internalProperties).model;
 	await Item.prepareForObjectFromSchema(item, model, settings);
 	const expectedObject = await Item.objectFromSchema(item, model, settings);
