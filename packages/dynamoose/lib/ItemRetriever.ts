@@ -68,7 +68,7 @@ abstract class ItemRetriever extends InternalPropertiesClass<ItemRetrieverIntern
 			}
 
 			const buildItemFromModel = (model: ModelType<Item>, item: Model<Item>) =>
-				new model.Item(item, {"type": "fromDynamo"}).conformToSchema({"customTypesDynamo": true, "checkExpiredItem": true, "saveUnknown": true, "modifiers": ["get"], "modifiersRaw": ["getRaw"], "type": "fromDynamo", "mapAttributes": true})
+				new model.Item(item, {"type": "fromDynamo"}).conformToSchema({"customTypesDynamo": true, "checkExpiredItem": true, "saveUnknown": true, "modifiers": ["get"], "returnRaw": true, "type": "fromDynamo", "mapAttributes": true})
 			;
 
 			const array: any = (await Promise.all(result.Items.map(async (item: Model<Item>) => {

@@ -612,7 +612,7 @@ export interface ItemObjectFromSchemaSettings {
 	populate?: boolean;
 	combine?: boolean;
 	modifiers?: ("set" | "get")[];
-	modifiersRaw?: ("getRaw")[];
+	returnRaw?: booolean;
 	updateTimestamps?: boolean | {updatedAt?: boolean; createdAt?: boolean};
 	typeCheck?: boolean;
 	mapAttributes?: boolean;
